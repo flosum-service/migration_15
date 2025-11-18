@@ -76,7 +76,7 @@ async function main() {
 
     migrations.push({
       from: `${config.bucket}/${from.slice(0, -1)}`,
-      to: `${to.join("/")}`,
+      to: `${to.join("/")}/`,
     });
   }
 
