@@ -1,6 +1,8 @@
 import {
   ListBucketsCommand,
+  ListDirectoryBucketsCommand,
   ListObjectsCommand,
+  ListObjectsV2Command,
   S3Client,
 } from "@aws-sdk/client-s3";
 
@@ -13,9 +15,8 @@ const s3 = new S3Client({ region: "us-east-2" });
 
 async function main() {
   const { Contents } = await s3.send(
-    new ListObjectsCommand({
+    new ListObjectsV2Command({
       Bucket: "dev-devops-us-east-2-bucket",
-      MaxKeys: 100000,
     })
   );
 
