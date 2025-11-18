@@ -107,6 +107,7 @@ async function main() {
       ]);
 
       child.stdout.on("data", async (data) => {
+        process.stdout.write(data);
         await appendFile(
           `./.logs/${encodedId}.migrate.stdout.log`,
           JSON.stringify({ data })

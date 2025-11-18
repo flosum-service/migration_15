@@ -39,6 +39,7 @@ async function main() {
       ]);
 
       child.stdout.on("data", async (data) => {
+        process.stdout.write(data);
         await appendFile(
           `./.logs/${encodedId}.clean.stdout.log`,
           JSON.stringify({ data })
