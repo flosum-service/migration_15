@@ -7,10 +7,9 @@ import {
 import basex from "base-x";
 import { writeFile } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
-import { promisify } from "node:util";
-import cp from "node:child_process";
-
-const execAsync = promisify(cp.exec);
+import { spawn } from "node:child_process";
+import { resolve } from "node:path";
+import { rejects } from "node:assert";
 
 const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const base58 = basex(ALPHABET);
@@ -99,7 +98,26 @@ async function main() {
     const command = `aws s3 cp s3://${config.bucket}/${from} s3://${config.bucket}/${to} --recursive`;
     console.log(`Executing: ${command}...`);
 
-    await execAsync(command, { maxBuffer: 100000 });
+    await new Promise((resolve, reject) => {
+      const child = spawn(command);
+
+      child.stdout.on("data", (data) => {
+        process.stdout.write(data); // stream output
+      });
+
+      child.stderr.on("data", (data) => {
+        process.stderr.write(data);
+      });
+
+      child.on("close", (code) => {
+        if (code === 0) {
+          resolve(null);
+        }
+
+        reject(null);
+      });
+    });
+
     // await s3.send(
     //   new CopyObjectCommand({
     //     Bucket: config.bucket,
