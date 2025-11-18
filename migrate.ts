@@ -19,27 +19,33 @@ function encoded(id: number): string {
 }
 
 async function main() {
-  const { Contents } = await s3.send(
-    new ListObjectsV2Command({
-      Bucket: "dev-devops-us-east-2-bucket",
-    })
-  );
+  const keys = new Set();
+  let ContinuationToken;
 
-  if (!Contents) {
-    throw new Error("No Content");
-  }
+  do {
+    const { Contents, CommonPrefixes, NextContinuationToken } = await s3.send(
+      new ListObjectsV2Command({
+        Bucket: "dev-devops-us-east-2-bucket",
+        Prefix: "/data",
+        Delimiter: "/", // если нужны только "папки" — оставь, иначе убери
+        ContinuationToken,
+      })
+    );
 
-  for (const { Key } of Contents) {
-    if (!Key) {
-      continue;
+    if (Contents) {
+      Contents.forEach((obj) => keys.add(obj.Key));
     }
 
-    const path = Key.split("/");
-
-    if (path[0] === "data") {
-      console.log(`tenantId: ${path[1]}`);
+    if (CommonPrefixes) {
+      CommonPrefixes.forEach((cp) => keys.add(cp.Prefix));
     }
-  }
 
-  //   console.log(b);
+    console.log({ NextContinuationToken });
+
+    ContinuationToken = NextContinuationToken;
+  } while (ContinuationToken);
+
+  console.log(keys.keys());
 }
+
+main();
