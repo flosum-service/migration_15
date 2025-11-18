@@ -32,6 +32,8 @@ async function main() {
       })
     );
 
+    console.log(Contents);
+
     if (Contents) {
       Contents.forEach((obj) => keys.add(obj.Key));
     }
