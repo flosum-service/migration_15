@@ -1,4 +1,8 @@
-import { ListBucketsCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  ListBucketsCommand,
+  ListObjectsCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 
 import basex from "base-x";
 
@@ -8,7 +12,11 @@ const base58 = basex(ALPHABET);
 const s3 = new S3Client({ region: "us-east-2" });
 
 async function main() {
-  const b = await s3.send(new ListBucketsCommand());
+  const b = await s3.send(
+    new ListObjectsCommand({ Bucket: "dev-devops-us-east-2-artem-bucket" })
+  );
+
+  console.log(b);
 }
 
 main();
