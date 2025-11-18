@@ -20,18 +20,32 @@ function encoded(id: number): string {
 
 async function main() {
   const keys = new Set();
+  let ContinuationToken;
 
-  const { Contents } = await s3.send(
-    new ListObjectsV2Command({
-      Bucket: "dev-devops-us-east-2-bucket",
-      Prefix: "data/",
-      Delimiter: "/",
-    })
-  );
+  do {
+    const { Contents, CommonPrefixes, NextContinuationToken } = await s3.send(
+      new ListObjectsV2Command({
+        Bucket: "dev-devops-us-east-2-bucket",
+        Prefix: "data/",
+        Delimiter: "/", // если нужны только "папки" — оставь, иначе убери
+        ContinuationToken,
+      })
+    );
 
-  if (Contents) {
-    Contents.forEach((obj) => keys.add(obj.Key));
-  }
+    console.log(Contents);
+
+    if (Contents) {
+      Contents.forEach((obj) => keys.add(obj.Key));
+    }
+
+    // if (CommonPrefixes) {
+    //   CommonPrefixes.forEach((cp) => keys.add(cp.Prefix));
+    // }
+
+    console.log({ NextContinuationToken });
+
+    ContinuationToken = NextContinuationToken;
+  } while (ContinuationToken);
 
   console.log(keys.keys());
 }
