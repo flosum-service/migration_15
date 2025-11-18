@@ -7,6 +7,10 @@ import {
 import basex from "base-x";
 import { writeFile } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
+import { promisify } from "node:util";
+import cp from "node:child_process";
+
+const execAsync = promisify(cp.exec);
 
 const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const base58 = basex(ALPHABET);
@@ -75,8 +79,8 @@ async function main() {
     to[to.length - 1] = encoded(id);
 
     migrations.push({
-      from: `${config.bucket}/${from.slice(0, -1)}`,
-      to: `${to.join("/")}/`,
+      from: `${from.slice(0, -1)}`,
+      to: `${to.join("/")}`,
     });
   }
 
@@ -92,13 +96,17 @@ async function main() {
   }
 
   for (const { from, to } of migrations) {
-    await s3.send(
-      new CopyObjectCommand({
-        Bucket: config.bucket,
-        CopySource: from,
-        Key: to,
-      })
-    );
+    const command = `aws s3 cp s3://${config.bucket}/${from} s3://${config.bucket}/${to} --recursive`;
+    console.log(`Executing: ${command}...`);
+
+    await execAsync(command);
+    // await s3.send(
+    //   new CopyObjectCommand({
+    //     Bucket: config.bucket,
+    //     CopySource: from,
+    //     Key: to,
+    //   })
+    // );
   }
 }
 
