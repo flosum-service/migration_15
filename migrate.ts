@@ -22,26 +22,18 @@ async function main() {
   const keys = new Set();
   let ContinuationToken;
 
-  do {
-    const { Contents, CommonPrefixes } = await s3.send(
-      new ListObjectsV2Command({
-        Bucket: "dev-devops-us-east-2-bucket",
-        Prefix: "data/",
-        Delimiter: "/", // если нужны только "папки" — оставь, иначе убери
-        ContinuationToken,
-      })
-    );
+  const { CommonPrefixes } = await s3.send(
+    new ListObjectsV2Command({
+      Bucket: "dev-devops-us-east-2-bucket",
+      Prefix: "data/",
+      Delimiter: "/",
+      ContinuationToken,
+    })
+  );
 
-    console.log(CommonPrefixes);
-
-    if (Contents) {
-      Contents.forEach((obj) => keys.add(obj.Key));
-    }
-
-    if (CommonPrefixes) {
-      CommonPrefixes.forEach((cp) => keys.add(cp.Prefix));
-    }
-  } while (ContinuationToken);
+  if (CommonPrefixes) {
+    CommonPrefixes.forEach((cp) => keys.add(cp.Prefix));
+  }
 
   console.log(keys.keys());
 }
