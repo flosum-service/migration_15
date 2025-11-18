@@ -13,6 +13,11 @@ const base58 = basex(ALPHABET);
 
 const s3 = new S3Client({ region: "us-east-2" });
 
+function encoded(id: number): string {
+  const padded = id.toString().padStart(11, "0");
+  return base58.encode(Buffer.from(padded));
+}
+
 async function main() {
   const { Contents } = await s3.send(
     new ListObjectsV2Command({
@@ -38,5 +43,3 @@ async function main() {
 
   //   console.log(b);
 }
-
-main();
