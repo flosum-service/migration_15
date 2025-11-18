@@ -13,7 +13,10 @@ const s3 = new S3Client({ region: "us-east-2" });
 
 async function main() {
   const { Contents } = await s3.send(
-    new ListObjectsCommand({ Bucket: "dev-devops-us-east-2-bucket" })
+    new ListObjectsCommand({
+      Bucket: "dev-devops-us-east-2-bucket",
+      MaxKeys: 100000,
+    })
   );
 
   if (!Contents) {
