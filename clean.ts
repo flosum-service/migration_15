@@ -21,7 +21,7 @@ async function main() {
   console.log({ config });
   console.log({ migrations });
 
-  const an = await rl.question("\n\nContinue ? (yes|no): ");
+  const an = await rl.question("\n\nTo remove 'from' path say yes. (yes|no): ");
 
   if (an !== "yes") {
     return;
