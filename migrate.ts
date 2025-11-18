@@ -5,11 +5,9 @@ import {
 } from "@aws-sdk/client-s3";
 
 import basex from "base-x";
-import { writeFile } from "node:fs/promises";
+import { appendFile, writeFile, mkdir } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
 import { spawn } from "node:child_process";
-import { resolve } from "node:path";
-import { rejects } from "node:assert";
 
 const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const base58 = basex(ALPHABET);
@@ -29,6 +27,8 @@ function encoded(id: number): string {
 }
 
 async function main() {
+  await mkdir("./.logs", { recursive: true });
+
   const toMigrate = new Set<string>();
 
   const main = await s3.send(
@@ -75,9 +75,11 @@ async function main() {
     }
 
     to.slice();
-    to[to.length - 1] = encoded(id);
+    const encodedId = encoded(id);
+    to[to.length - 1] = encodedId;
 
     migrations.push({
+      encodedId,
       from: `${from.slice(0, -1)}`,
       to: `${to.join("/")}`,
     });
@@ -94,10 +96,12 @@ async function main() {
     return;
   }
 
-  for (const { from, to } of migrations) {
+  const promise = [];
+
+  for (const { encodedId, from, to } of migrations) {
     console.log(`Executing: aws ${["s3", "cp", from, to, "--recursive"]}...`);
 
-    await new Promise((resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
       const child = spawn("aws", [
         "s3",
         "cp",
@@ -106,12 +110,19 @@ async function main() {
         "--recursive",
       ]);
 
-      child.stdout.on("data", (data) => {
-        process.stdout.write(data); // stream output
+      child.stdout.on("data", async (data) => {
+        await appendFile(
+          `./.logs/${encodedId}.stdout.log`,
+          JSON.stringify({ data })
+        );
       });
 
-      child.stderr.on("data", (data) => {
+      child.stderr.on("data", async (data) => {
         process.stderr.write(data);
+        await appendFile(
+          `./.logs/${encodedId}.stderr.log`,
+          JSON.stringify({ data })
+        );
       });
 
       child.on("close", (code) => {
@@ -122,14 +133,6 @@ async function main() {
         reject(null);
       });
     });
-
-    // await s3.send(
-    //   new CopyObjectCommand({
-    //     Bucket: config.bucket,
-    //     CopySource: from,
-    //     Key: to,
-    //   })
-    // );
   }
 }
 
