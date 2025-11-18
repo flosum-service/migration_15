@@ -13,7 +13,7 @@ const s3 = new S3Client({ region: "us-east-2" });
 
 async function main() {
   const b = await s3.send(
-    new ListObjectsCommand({ Bucket: "dev-devops-us-east-2-artem-bucket" })
+    new ListObjectsCommand({ Bucket: "dev-revvy-devops-us-east-2-bucket" })
   );
 
   console.log(b);
