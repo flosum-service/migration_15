@@ -1,0 +1,20 @@
+{
+  "name": "migrate_15",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "migrate": "tsx --env-file=.env migrate.ts",
+    "clean": "tsx --env-file=.env clean.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1692.0",
+    "basex": "^1.1.0",
+    "install": "^0.13.0",
+    "npm": "^11.6.2",
+    "tsx": "^4.20.6"
+  }
+}
