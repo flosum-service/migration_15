@@ -38,9 +38,9 @@ async function main() {
       Contents.forEach((obj) => keys.add(obj.Key));
     }
 
-    // if (CommonPrefixes) {
-    //   CommonPrefixes.forEach((cp) => keys.add(cp.Prefix));
-    // }
+    if (CommonPrefixes) {
+      CommonPrefixes.forEach((cp) => keys.add(cp.Prefix));
+    }
 
     console.log({ NextContinuationToken });
 
