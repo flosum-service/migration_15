@@ -5,7 +5,7 @@ import basex from "base-x";
 const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const base58 = basex(ALPHABET);
 
-const s3 = new S3Client();
+const s3 = new S3Client({ region: "us-east-2" });
 
 async function main() {
   const b = await s3.send(new ListBucketsCommand());
