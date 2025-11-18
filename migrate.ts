@@ -13,29 +13,52 @@ const base58 = basex(ALPHABET);
 
 const s3 = new S3Client({ region: "us-east-2" });
 
-function encoded(id: number): string {
-  const padded = id.toString().padStart(11, "0");
+function encoded(id: string): string {
+  const padded = id.padStart(11, "0");
   return base58.encode(Buffer.from(padded));
 }
 
 async function main() {
-  const keys = new Set();
-  let ContinuationToken;
+  const toMigrate = new Set<string>();
 
-  const { CommonPrefixes } = await s3.send(
+  const main = await s3.send(
     new ListObjectsV2Command({
       Bucket: "dev-devops-us-east-2-bucket",
       Prefix: "data/",
       Delimiter: "/",
-      ContinuationToken,
     })
   );
 
-  if (CommonPrefixes) {
-    CommonPrefixes.forEach((cp) => keys.add(cp.Prefix));
+  if (main.CommonPrefixes) {
+    main.CommonPrefixes.forEach((cp) => toMigrate.add(cp.Prefix));
   }
 
-  console.log(keys.keys());
+  const fit = await s3.send(
+    new ListObjectsV2Command({
+      Bucket: "dev-devops-us-east-2-bucket",
+      Prefix: "data/fit/",
+      Delimiter: "/",
+    })
+  );
+
+  if (fit.CommonPrefixes) {
+    fit.CommonPrefixes.forEach((cp) => toMigrate.add(cp.Prefix));
+  }
+
+  const migrations = [];
+
+  for (const from of toMigrate.keys()) {
+    const to = from.split("/");
+    to[-1] = encoded(to[-1]);
+    migrations.push({
+      from,
+      to: to.join("/"),
+    });
+  }
+
+  console.log(migrations);
+
+  console.log(toMigrate.keys());
 }
 
 main();
