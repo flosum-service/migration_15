@@ -1,8 +1,4 @@
-import {
-  CopyObjectCommand,
-  ListObjectsV2Command,
-  S3Client,
-} from "@aws-sdk/client-s3";
+import { ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 
 import basex from "base-x";
 import { appendFile, writeFile, mkdir } from "node:fs/promises";
@@ -101,7 +97,7 @@ async function main() {
   for (const { encodedId, from, to } of migrations) {
     console.log(`Executing: aws ${["s3", "cp", from, to, "--recursive"]}...`);
 
-    const promise = new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       const child = spawn("aws", [
         "s3",
         "cp",
@@ -112,7 +108,7 @@ async function main() {
 
       child.stdout.on("data", async (data) => {
         await appendFile(
-          `./.logs/${encodedId}.stdout.log`,
+          `./.logs/${encodedId}.migrate.stdout.log`,
           JSON.stringify({ data })
         );
       });
@@ -120,7 +116,7 @@ async function main() {
       child.stderr.on("data", async (data) => {
         process.stderr.write(data);
         await appendFile(
-          `./.logs/${encodedId}.stderr.log`,
+          `./.logs/${encodedId}.migrate.stderr.log`,
           JSON.stringify({ data })
         );
       });
