@@ -73,6 +73,8 @@ async function main() {
 
     to[to.length - 2] = encoded(id);
 
+    console.log(to);
+
     migrations.push({
       from: `s3://${config.bucket}/${from}`,
       to: `s3://${config.bucket}/${to.join("/")}`,
