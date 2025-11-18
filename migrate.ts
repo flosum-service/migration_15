@@ -99,7 +99,7 @@ async function main() {
     const command = `aws s3 cp s3://${config.bucket}/${from} s3://${config.bucket}/${to} --recursive`;
     console.log(`Executing: ${command}...`);
 
-    await execAsync(command);
+    await execAsync(command, { maxBuffer: 100000 });
     // await s3.send(
     //   new CopyObjectCommand({
     //     Bucket: config.bucket,
