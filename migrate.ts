@@ -11,11 +11,6 @@ import basex from "base-x";
 import { writeFile } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
 
-const rl = createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
 const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const base58 = basex(ALPHABET);
 
@@ -95,4 +90,11 @@ async function main() {
   console.log(toMigrate.keys());
 }
 
-main();
+const rl = createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+main().then(() => {
+  rl.close();
+});
