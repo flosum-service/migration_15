@@ -30,7 +30,11 @@ async function main() {
   );
 
   if (main.CommonPrefixes) {
-    main.CommonPrefixes.forEach((cp) => toMigrate.add(cp.Prefix));
+    main.CommonPrefixes.forEach((cp) => {
+      if (cp.Prefix) {
+        toMigrate.add(cp.Prefix);
+      }
+    });
   }
 
   const fit = await s3.send(
@@ -42,23 +46,27 @@ async function main() {
   );
 
   if (fit.CommonPrefixes) {
-    fit.CommonPrefixes.forEach((cp) => toMigrate.add(cp.Prefix));
+    fit.CommonPrefixes.forEach((cp) => {
+      if (cp.Prefix) {
+        toMigrate.add(cp.Prefix);
+      }
+    });
   }
 
   const migrations = [];
 
   for (const from of toMigrate.keys()) {
     const to = from.split("/");
-    to[-1] = encoded(to[-1]);
+    to[to.length - 1] = encoded(to[to.length - 1]);
+
     migrations.push({
       from,
       to: to.join("/"),
     });
   }
 
-  console.log(migrations);
-
   console.log(toMigrate.keys());
+  console.log(migrations);
 }
 
 main();
