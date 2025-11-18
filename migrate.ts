@@ -23,7 +23,7 @@ async function main() {
   let ContinuationToken;
 
   do {
-    const { Contents, CommonPrefixes, NextContinuationToken } = await s3.send(
+    const { Contents, CommonPrefixes } = await s3.send(
       new ListObjectsV2Command({
         Bucket: "dev-devops-us-east-2-bucket",
         Prefix: "data/",
@@ -32,7 +32,7 @@ async function main() {
       })
     );
 
-    console.log(Contents);
+    console.log(CommonPrefixes);
 
     if (Contents) {
       Contents.forEach((obj) => keys.add(obj.Key));
@@ -41,10 +41,6 @@ async function main() {
     if (CommonPrefixes) {
       CommonPrefixes.forEach((cp) => keys.add(cp.Prefix));
     }
-
-    console.log({ NextContinuationToken });
-
-    ContinuationToken = NextContinuationToken;
   } while (ContinuationToken);
 
   console.log(keys.keys());
