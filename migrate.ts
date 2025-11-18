@@ -1,8 +1,5 @@
 import {
   CopyObjectCommand,
-  ListBucketsCommand,
-  ListDirectoryBucketsCommand,
-  ListObjectsCommand,
   ListObjectsV2Command,
   S3Client,
 } from "@aws-sdk/client-s3";
@@ -14,7 +11,14 @@ import { createInterface } from "node:readline/promises";
 const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const base58 = basex(ALPHABET);
 
-const s3 = new S3Client({ region: "us-east-2" });
+const config = {
+  region: process.env.AWS_REGION,
+  bucket: process.env.AWS_BUCKET,
+};
+
+console.log({ config });
+
+const s3 = new S3Client({ region: config.region });
 
 function encoded(id: number): string {
   const padded = id.toString().padStart(11, "0");
@@ -26,7 +30,7 @@ async function main() {
 
   const main = await s3.send(
     new ListObjectsV2Command({
-      Bucket: "dev-devops-us-east-2-bucket",
+      Bucket: config.bucket,
       Prefix: "data/",
       Delimiter: "/",
     })
@@ -42,7 +46,7 @@ async function main() {
 
   const fit = await s3.send(
     new ListObjectsV2Command({
-      Bucket: "dev-devops-us-east-2-bucket",
+      Bucket: config.bucket,
       Prefix: "data/fit/",
       Delimiter: "/",
     })
@@ -77,7 +81,8 @@ async function main() {
 
   await writeFile("migration.json", JSON.stringify(migrations));
 
-  console.log(migrations);
+  console.log({ config });
+  console.log({ migrations });
 
   const an = await rl.question("\n\nContinue ? (yes|no): ");
 
@@ -85,9 +90,15 @@ async function main() {
     return;
   }
 
-  //   await s3.send(CopyObjectCommand());
-
-  console.log(toMigrate.keys());
+  for (const { from, to } of migrations) {
+    await s3.send(
+      new CopyObjectCommand({
+        Bucket: config.bucket,
+        CopySource: from,
+        Key: to,
+      })
+    );
+  }
 }
 
 const rl = createInterface({
