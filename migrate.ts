@@ -74,8 +74,8 @@ async function main() {
     to[to.length - 2] = encoded(id);
 
     migrations.push({
-      from,
-      to: to.join("/"),
+      from: `s3://${config.bucket}/${from}`,
+      to: `s3://${config.bucket}/${to.join("/")}`,
     });
   }
 
