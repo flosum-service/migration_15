@@ -63,20 +63,21 @@ async function main() {
   const migrations = [];
 
   for (const from of toMigrate.keys()) {
-    const to = from.split("/");
+    const to = from.slice(0, -1).split("/");
 
-    const id = parseInt(to[to.length - 2]);
+    const id = parseInt(to[to.length - 1]);
 
     if (!id) {
       continue;
     }
 
-    to[to.length - 2] = encoded(id);
+    to.slice();
+    to[to.length - 1] = encoded(id);
 
     console.log(to);
 
     migrations.push({
-      from: `s3://${config.bucket}/${from}`,
+      from: `s3://${config.bucket}/${from.slice(0, -1)}`,
       to: `s3://${config.bucket}/${to.join("/")}`,
     });
   }
