@@ -13,8 +13,8 @@ const base58 = basex(ALPHABET);
 
 const s3 = new S3Client({ region: "us-east-2" });
 
-function encoded(id: string): string {
-  const padded = String(id).padStart(11, "0");
+function encoded(id: number): string {
+  const padded = id.toString().padStart(11, "0");
   return base58.encode(Buffer.from(padded));
 }
 
@@ -57,7 +57,14 @@ async function main() {
 
   for (const from of toMigrate.keys()) {
     const to = from.split("/");
-    to[to.length - 2] = encoded(to[to.length - 2]);
+
+    const id = parseInt(to[to.length - 2]);
+
+    if (!id) {
+      continue;
+    }
+
+    to[to.length - 2] = encoded(id);
 
     migrations.push({
       from,
