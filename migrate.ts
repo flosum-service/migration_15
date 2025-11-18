@@ -57,7 +57,7 @@ async function main() {
 
   for (const from of toMigrate.keys()) {
     const to = from.split("/");
-    to[to.length - 1] = encoded(to[to.length - 1]);
+    to[to.length - 2] = encoded(to[to.length - 2]);
 
     migrations.push({
       from,
