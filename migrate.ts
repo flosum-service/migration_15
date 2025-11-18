@@ -99,7 +99,9 @@ async function main() {
     console.log(`Executing: ${command}...`);
 
     await new Promise((resolve, reject) => {
-      const child = spawn(command);
+      const child = spawn(command, {
+        env: process.env,
+      });
 
       child.stdout.on("data", (data) => {
         process.stdout.write(data); // stream output
