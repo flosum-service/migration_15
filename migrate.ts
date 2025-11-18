@@ -26,6 +26,7 @@ async function main() {
     const { Contents, CommonPrefixes, NextContinuationToken } = await s3.send(
       new ListObjectsV2Command({
         Bucket: "dev-devops-us-east-2-bucket",
+        Prefix: "data/",
         Delimiter: "/", // если нужны только "папки" — оставь, иначе убери
         ContinuationToken,
       })
