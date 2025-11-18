@@ -1,4 +1,5 @@
 import {
+  CopyObjectCommand,
   ListBucketsCommand,
   ListDirectoryBucketsCommand,
   ListObjectsCommand,
@@ -7,6 +8,13 @@ import {
 } from "@aws-sdk/client-s3";
 
 import basex from "base-x";
+import { writeFile } from "node:fs/promises";
+import { createInterface } from "node:readline/promises";
+
+const rl = createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
 const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const base58 = basex(ALPHABET);
@@ -72,8 +80,19 @@ async function main() {
     });
   }
 
-  console.log(toMigrate.keys());
+  await writeFile("migration.json", JSON.stringify(migrations));
+
   console.log(migrations);
+
+  const an = await rl.question("\n\nContinue ? (yes|no): ");
+
+  if (an !== "yes") {
+    return;
+  }
+
+  //   await s3.send(CopyObjectCommand());
+
+  console.log(toMigrate.keys());
 }
 
 main();
