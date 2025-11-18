@@ -96,12 +96,10 @@ async function main() {
 
   for (const { from, to } of migrations) {
     const command = `aws s3 cp s3://${config.bucket}/${from} s3://${config.bucket}/${to} --recursive`;
-    console.log(`Executing: ${command}...`);
+    console.log(`Executing: aws ${["s3", "cp", from, to, "--recursive"]}...`);
 
     await new Promise((resolve, reject) => {
-      const child = spawn(command, {
-        env: process.env,
-      });
+      const child = spawn("aws", ["s3", "cp", from, to, "--recursive"]);
 
       child.stdout.on("data", (data) => {
         process.stdout.write(data); // stream output
