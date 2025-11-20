@@ -78,7 +78,7 @@ async function main() {
       encodedId,
       from: `${from.slice(0, -1)}`,
       to: `${to.join("/")}`,
-      cmd: `aws ${["s3", "sync", from, to, "--delete"]}`,
+      cmd: `aws ${["s3", "sync", from, to, "--delete"].join(" ")}`,
     });
   }
 
@@ -96,7 +96,9 @@ async function main() {
   const promise = [];
 
   for (const { encodedId, from, to } of migrations) {
-    console.log(`Executing: aws ${["s3", "sync", from, to, "--delete"]}...`);
+    console.log(
+      `Executing: aws ${["s3", "sync", from, to, "--delete"].join(" ")}...`
+    );
 
     await new Promise((resolve, reject) => {
       const child = spawn("aws", [
