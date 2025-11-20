@@ -95,15 +95,15 @@ async function main() {
   const promise = [];
 
   for (const { encodedId, from, to } of migrations) {
-    console.log(`Executing: aws ${["s3", "cp", from, to, "--recursive"]}...`);
+    console.log(`Executing: aws ${["s3", "sync", from, to, "--delete"]}...`);
 
     await new Promise((resolve, reject) => {
       const child = spawn("aws", [
         "s3",
-        "cp",
+        "sync",
         `s3://${config.bucket}/${from}`,
         `s3://${config.bucket}/${to}`,
-        "--recursive",
+        "--delete",
       ]);
 
       child.stdout.on("data", async (data) => {
