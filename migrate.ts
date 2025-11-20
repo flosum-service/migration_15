@@ -98,7 +98,7 @@ async function main() {
 
   const promises = [];
 
-  for (const ch of chunk(migrations, migrations.length / 5)) {
+  for (const ch of chunk(migrations, migrations.length / 10)) {
     let promise = Promise.resolve();
 
     for (const { encodedId, from, to } of ch) {
