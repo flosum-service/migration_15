@@ -102,11 +102,11 @@ async function main() {
     let promise = Promise.resolve();
 
     for (const { encodedId, from, to } of ch) {
-      console.log(
-        `Executing: aws ${["s3", "sync", from, to, "--delete"].join(" ")}...`
-      );
-
       promise = promise.then(async () => {
+        console.log(
+          `Executing: aws ${["s3", "sync", from, to, "--delete"].join(" ")}...`
+        );
+
         await new Promise((resolve, reject) => {
           const child = spawn("aws", [
             "s3",
