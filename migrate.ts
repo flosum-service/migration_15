@@ -96,16 +96,18 @@ async function main() {
     return;
   }
 
-  for (const ch of chunk(migrations, 5)) {
-    const promises = [];
+  const promises = [];
+
+  for (const ch of chunk(migrations, migrations.length / 5)) {
+    let promise = Promise.resolve();
 
     for (const { encodedId, from, to } of ch) {
       console.log(
         `Executing: aws ${["s3", "sync", from, to, "--delete"].join(" ")}...`
       );
 
-      promises.push(
-        new Promise((resolve, reject) => {
+      promise = promise.then(async () => {
+        await new Promise((resolve, reject) => {
           const child = spawn("aws", [
             "s3",
             "sync",
@@ -137,12 +139,14 @@ async function main() {
 
             reject(null);
           });
-        })
-      );
+        });
+      });
     }
 
-    await Promise.all(promises);
+    promises.push(promise);
   }
+
+  await Promise.all(promises);
 }
 
 const rl = createInterface({
