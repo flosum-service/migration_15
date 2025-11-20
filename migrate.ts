@@ -79,9 +79,7 @@ async function main() {
       encodedId,
       from: `${from.slice(0, -1)}`,
       to: `${to.join("/")}`,
-      cmd: `aws ${["s3", "sync", from, `${to.join("/")}`, "--delete"].join(
-        " "
-      )}`,
+      cmd: `aws ${["s3", "sync", from, `${to.join("/")}`].join(" ")}`,
     });
   }
 
@@ -103,9 +101,7 @@ async function main() {
 
     for (const { encodedId, from, to } of ch) {
       promise = promise.then(async () => {
-        console.log(
-          `Executing: aws ${["s3", "sync", from, to, "--delete"].join(" ")}...`
-        );
+        console.log(`Executing: aws ${["s3", "sync", from, to].join(" ")}...`);
 
         await new Promise((resolve, reject) => {
           const child = spawn("aws", [
@@ -113,32 +109,33 @@ async function main() {
             "sync",
             `s3://${config.bucket}/${from}`,
             `s3://${config.bucket}/${to}`,
-            "--delete",
           ]);
 
           child.stdout.on("data", async (data) => {
             process.stdout.write(data);
-            await appendFile(
-              `./.logs/${encodedId}.migrate.stdout.log`,
-              JSON.stringify({ log: Buffer.from(data).toString() })
-            );
+            await appendFile(`./.logs/${encodedId}.migrate.stdout.log`, data);
           });
 
           child.stderr.on("data", async (data) => {
             process.stderr.write(data);
-            await appendFile(
-              `./.logs/${encodedId}.migrate.stderr.log`,
-              JSON.stringify({ log: Buffer.from(data).toString() })
-            );
+            await appendFile(`./.logs/${encodedId}.migrate.stderr.log`, data);
           });
 
           child.on("close", async (code) => {
             await appendFile(
               `./.logs/${encodedId}.migrate.stderr.log`,
-              JSON.stringify({ code })
+              `ErrorCode: ${code}`
             );
 
             resolve(null);
+          });
+
+          child.on("error", async (err: Error) => {
+            process.stderr.write(err.message);
+            await appendFile(
+              `./.logs/${encodedId}.migrate.stderr.log`,
+              JSON.stringify(err)
+            );
           });
         });
       });
