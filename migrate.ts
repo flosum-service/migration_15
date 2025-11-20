@@ -4,6 +4,7 @@ import basex from "base-x";
 import { appendFile, writeFile, mkdir } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
 import { spawn } from "node:child_process";
+import chunk from "chunk";
 
 const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const base58 = basex(ALPHABET);
@@ -95,46 +96,52 @@ async function main() {
     return;
   }
 
-  const promise = [];
+  for (const ch of chunk(migrations, 5)) {
+    const promises = [];
 
-  for (const { encodedId, from, to } of migrations) {
-    console.log(
-      `Executing: aws ${["s3", "sync", from, to, "--delete"].join(" ")}...`
-    );
+    for (const { encodedId, from, to } of ch) {
+      console.log(
+        `Executing: aws ${["s3", "sync", from, to, "--delete"].join(" ")}...`
+      );
 
-    await new Promise((resolve, reject) => {
-      const child = spawn("aws", [
-        "s3",
-        "sync",
-        `s3://${config.bucket}/${from}`,
-        `s3://${config.bucket}/${to}`,
-        "--delete",
-      ]);
+      promises.push(
+        new Promise((resolve, reject) => {
+          const child = spawn("aws", [
+            "s3",
+            "sync",
+            `s3://${config.bucket}/${from}`,
+            `s3://${config.bucket}/${to}`,
+            "--delete",
+          ]);
 
-      child.stdout.on("data", async (data) => {
-        process.stdout.write(data);
-        await appendFile(
-          `./.logs/${encodedId}.migrate.stdout.log`,
-          JSON.stringify({ data })
-        );
-      });
+          child.stdout.on("data", async (data) => {
+            process.stdout.write(data);
+            await appendFile(
+              `./.logs/${encodedId}.migrate.stdout.log`,
+              JSON.stringify({ data })
+            );
+          });
 
-      child.stderr.on("data", async (data) => {
-        process.stderr.write(data);
-        await appendFile(
-          `./.logs/${encodedId}.migrate.stderr.log`,
-          JSON.stringify({ data })
-        );
-      });
+          child.stderr.on("data", async (data) => {
+            process.stderr.write(data);
+            await appendFile(
+              `./.logs/${encodedId}.migrate.stderr.log`,
+              JSON.stringify({ data })
+            );
+          });
 
-      child.on("close", (code) => {
-        if (code === 0) {
-          resolve(null);
-        }
+          child.on("close", (code) => {
+            if (code === 0) {
+              resolve(null);
+            }
 
-        reject(null);
-      });
-    });
+            reject(null);
+          });
+        })
+      );
+    }
+
+    await Promise.all(promises);
   }
 }
 
