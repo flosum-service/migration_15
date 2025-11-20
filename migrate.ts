@@ -120,7 +120,7 @@ async function main() {
             process.stdout.write(data);
             await appendFile(
               `./.logs/${encodedId}.migrate.stdout.log`,
-              JSON.stringify({ data })
+              JSON.stringify({ log: Buffer.from(data).toString() })
             );
           });
 
@@ -128,16 +128,17 @@ async function main() {
             process.stderr.write(data);
             await appendFile(
               `./.logs/${encodedId}.migrate.stderr.log`,
-              JSON.stringify({ data })
+              JSON.stringify({ log: Buffer.from(data).toString() })
             );
           });
 
-          child.on("close", (code) => {
-            if (code === 0) {
-              resolve(null);
-            }
+          child.on("close", async (code) => {
+            await appendFile(
+              `./.logs/${encodedId}.migrate.stderr.log`,
+              JSON.stringify({ code })
+            );
 
-            reject(null);
+            resolve(null);
           });
         });
       });
