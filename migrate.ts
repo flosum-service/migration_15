@@ -78,6 +78,7 @@ async function main() {
       encodedId,
       from: `${from.slice(0, -1)}`,
       to: `${to.join("/")}`,
+      cmd: `aws ${["s3", "sync", from, to, "--delete"]}`,
     });
   }
 
